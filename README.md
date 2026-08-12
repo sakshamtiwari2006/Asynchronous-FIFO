@@ -29,10 +29,15 @@ The design consists of the top-level module `fifo.v` that integrates four primar
 
 ## File Structure
 
-```text
 .
 ├── fifo.v            # Top-level module interconnecting write, read, and synchronizer modules
 ├── write_side.v      # Write pointer logic and clocked full flag generator
 ├── read_side.v       # Read pointer logic and combinational empty flag generator
 ├── synchronizer.v    # 2-stage D-Flip-Flop cross-domain pointer synchronizer
 └── async_fifo_tb.v   # Testbench with asynchronous clock domains and burst verification
+
+---
+
+## Output Waveform of Used Testbench
+
+<img width="1574" height="808" alt="Screenshot 2026-08-13 004516" src="https://github.com/user-attachments/assets/6a720662-fe84-4be3-bdd6-22ebfc6cfb4f" />
