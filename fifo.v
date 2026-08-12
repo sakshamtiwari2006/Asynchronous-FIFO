@@ -7,66 +7,75 @@ module fifo(
     input wclk,
     input wrst_n,
     input w_en,
+
     input r_en,
     input rrst_n,
     input rclk,
+
     output reg [7:0] data_out,
     output full,
     output empty,
-    output [3:0] b_wptr, b_rptr 
+
+    output [3:0] b_wptr,
+    output [3:0] b_rptr
 );
 
-    wire [3:0] g_wptr, g_rptr, g_rptr_sync, g_wptr_sync;
-   
+    wire [3:0] g_wptr;
+    wire [3:0] g_rptr;
+
+    wire [3:0] g_rptr_sync;
+    wire [3:0] g_wptr_sync;
+
     synchronizer s_w(
-        wclk,
-        wrst_n,
-        g_rptr, 
-        g_rptr_sync);
+        .clk     (wclk),
+        .reset_n (wrst_n),
+        .d_in    (g_rptr),
+        .d_out   (g_rptr_sync)
+    );
 
     write_side wr(
-        wclk,
-        wrst_n,
-        w_en,
-        g_rptr_sync,
-        g_wptr,
-        b_wptr,
-        full
+        .wclk        (wclk),
+        .wrst_n      (wrst_n),
+        .w_en        (w_en),
+        .data_in     (data_in),
+        .g_rptr_sync (g_rptr_sync),
+
+        .g_wptr      (g_wptr),
+        .b_wptr      (b_wptr),
+        .full        (full)
     );
 
-    synchronizer s_r (
-        rclk, 
-        rrst_n, 
-        g_wptr, 
-        g_wptr_sync);
+    reg [7:0] fifo_stack [0:7];
+
+    always @(posedge wclk) begin
+        if (w_en && (data_in != 8'h00) && !full) begin
+            fifo_stack[b_wptr[2:0]] <= data_in;
+        end
+    end
+
+    synchronizer s_r(
+        .clk     (rclk),
+        .reset_n (rrst_n),
+        .d_in    (g_wptr),
+        .d_out   (g_wptr_sync)
+    );
 
     read_side rd(
-        rclk,
-        rrst_n,
-        r_en,
-        g_wptr_sync,
-        b_rptr,
-        g_rptr,
-        empty
+        .rclk        (rclk),
+        .rrst_n      (rrst_n),
+        .r_en        (r_en),
+        .g_wptr_sync (g_wptr_sync),
+
+        .b_rptr      (b_rptr),
+        .g_rptr      (g_rptr),
+        .empty       (empty)
     );
 
-    reg [7:0] fifo_stack[0:7];
-
-    always @(posedge wclk)
-        begin
-            if(w_en && !full)begin
-                fifo_stack[b_wptr[2:0]] <= data_in;
-            end
-
-        end
-
-    always @(posedge rclk)
-        begin
-            if(!rrst_n)
-                data_out <= 0;
-            else if(r_en && !empty)begin
-                data_out <= fifo_stack[b_rptr[2:0]];
-            end
-        end
+    always @(posedge rclk or negedge rrst_n) begin
+        if (!rrst_n)
+            data_out <= 8'h00;
+        else if (r_en && !empty)
+            data_out <= fifo_stack[b_rptr[2:0]];
+    end
 
 endmodule
