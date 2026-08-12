@@ -20,7 +20,7 @@ This repository contains a Verilog implementation of an **Asynchronous FIFO (Fir
 
 The design consists of the top-level module `fifo.v` that integrates four primary functional blocks:
 
-* **Dual-Clock RAM Block (`fifo_stack`)**: An $8 \times 8$-bit register array that handles synchronous data writes on `wclk` and registered outputs on `rclk`.
+* **Dual-Clock RAM Block (`fifo`)**: An $8 \times 8$-bit register array that handles synchronous data writes on `wclk` and registered outputs on `rclk`.
 * **Write Domain (`write_side.v`)**: Manages binary write pointers (`b_wptr`), converts them to Gray code (`g_wptr`), and evaluates the `full` flag by comparing the next local Gray pointer with the synchronized read pointer[cite: 10].
 * **Read Domain (`read_side.v`)**: Manages binary read pointers (`b_rptr`), converts them to Gray code (`g_rptr`), and evaluates the `empty` flag[cite: 8].
 * **Pointer Synchronizer (`synchronizer.v`)**: Employs a 2-stage Flip-Flop (2-FF) cross-domain synchronizer to safely pass Gray-coded pointers between clock domains[cite: 7, 9].
